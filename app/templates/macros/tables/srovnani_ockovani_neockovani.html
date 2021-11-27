@@ -1,0 +1,162 @@
+{% macro srovnani_ockovani_neockovani(vaccinated_unvaccinated_comparison) -%}
+{#
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-sm mb-0">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col" class="text-center" rowspan="2" style="width: 16%"></th>
+            <th scope="col" class="text-center" rowspan="2" style="width: 12%">
+                Zastoupení
+                <i class="fas fa-exclamation-triangle" data-toggle="tooltip" data-placement="auto"
+                   title="Procentuální zastoupení skupiny v populaci. Zastoupení se výrazně liší u jednotlivých věkových kategorií!">
+                </i>
+            </th>
+            <th scope="col" class="text-center" colspan="2">Nakažení</th>
+            <th scope="col" class="text-center" colspan="2">Hospitalizovaní</th>
+            <th scope="col" class="text-center" colspan="2">Hospitalizovaní na JIP</th>
+            <th scope="col" class="text-center" colspan="2">Zemřelí</th>
+        </tr>
+        <tr>
+            <th scope="col" class="text-center" style="width: 9%">
+                Počet
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Počet nově nakažených za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Věk
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Průměrný věk nově nakažených za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Počet
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Počet nově hospitalizovaných za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Věk
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Průměrný věk nově hospitalizovaných za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Počet
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Počet nově hospitalizovaných na JIP za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Věk
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Průměrný věk nově hospitalizovaných na JIP za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Počet
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Počet zemřelých za posledních 7 dní.">
+                </i>
+            </th>
+            <th scope="col" class="text-center" style="width: 9%">
+                Věk
+                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                   title="Průměrný věk zemřelých za posledních 7 dní.">
+                </i>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Neočkovaní</td>
+            <td class="text-right">{{ (100 * vaccinated_unvaccinated_comparison['populace_bez_zastoupeni'].iloc[-1]) | format_decimal }} %</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_bez'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_bez_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_bez'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_bez_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_bez'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_bez_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_bez'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_bez_vek'].iloc[-1] | format_number }}</td>
+        </tr>
+        <tr>
+            <td>Částečně očkovaní</td>
+            <td class="text-right">{{ (100 * vaccinated_unvaccinated_comparison['populace_castecne_zastoupeni'].iloc[-1]) | format_decimal }} %</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_castecne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_castecne_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_castecne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_castecne_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_castecne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_castecne_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_castecne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_castecne_vek'].iloc[-1] | format_number }}</td>
+        </tr>
+        <tr>
+            <td>Plně očkovaní</td>
+            <td class="text-right">{{ (100 * vaccinated_unvaccinated_comparison['populace_plne_zastoupeni'].iloc[-1]) | format_decimal }} %</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_plne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_plne_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_plne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_plne_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_plne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_plne_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_plne'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_plne_vek'].iloc[-1] | format_number }}</td>
+        </tr>
+        <tr>
+            <td>Očkovaní posilující</td>
+            <td class="text-right">{{ (100 * vaccinated_unvaccinated_comparison['populace_posilujici_zastoupeni'].iloc[-1]) | format_decimal }} %</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_posilujici'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_posilujici_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_posilujici'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_posilujici_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_posilujici'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_posilujici_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_posilujici'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_posilujici_vek'].iloc[-1] | format_number }}</td>
+        </tr>
+        </tbody>
+        <tfoot class="font-weight-bold">
+        <tr>
+            <td>Všichni</td>
+            <td class="text-right">100,0 %</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_celkem'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['nakazeni_celkem_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_celkem'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_celkem_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_celkem'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['hospitalizace_jip_celkem_vek'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_celkem'].iloc[-1] | format_number }}</td>
+            <td class="text-right">{{ vaccinated_unvaccinated_comparison['umrti_celkem_vek'].iloc[-1] | format_number }}</td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+#}
+
+<p class="card-text font-italic text-justify mt-3">
+    Z důvodu častého nepochopení významu dat v tabulce, kdy jejich dezinterpretací docházelo k mylným závěrům, jsme se rozhodli tabulku dočasně skrýt.
+    V současné době je přislíbena nová datová sada obsahující navíc informaci o věkové skupině, až bude k dispozici přidáme novou názornější tabulku.
+</p>
+
+<p class="card-text font-italic text-justify mt-3">
+    Data zobrazovaná v tabulce jsou stále dostupná jako otevřená data na webu Ministerstva zdravotnictví:
+    <a href="https://onemocneni-aktualne.mzcr.cz/api/v2/covid-19" target="_blank">
+        COVID-19 v ČR: Otevřené datové sady a sady ke stažení</a>.
+</p>
+
+{#
+<p class="card-text font-italic text-justify mt-3">
+    Při intepretaci dat je třeba si uvědomit, že zastoupení očkovaných a neočkovaných v různých věkových skupinách
+    není stejné, například ve věkové skupině nad 70 let je plně očkováno přibližně 85 % obyvatel.
+</p>
+#}
+
+<p class="card-text font-italic text-justify">
+    Detailní vysvětlení:
+    <a href="https://vtm.zive.cz/clanky/ockovani-nefunguje-vzdyt-na-covid-minuly-tyden-zemrelo-vic-ockovanych-jenze-je-to-presne-naopak/sc-870-a-213083/default.aspx" target="_blank">
+        VTM: Očkování nefunguje, vždyť na covid minulý týden zemřelo víc očkovaných. Jenže je to přesně naopak
+    </a>
+</p>
+{%- endmacro %}

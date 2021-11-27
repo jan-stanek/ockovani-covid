@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Mapa |
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col">
+            <h3>Očkovací místa</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center mb-3">
+            <div class="custom-control custom-switch mr-3" style="display: inline-block">
+                <input id="centers-children" type="checkbox" class="custom-control-input" >
+                <label class="custom-control-label" for="centers-children">děti</label>
+            </div>
+            <div class="custom-control custom-switch mr-3" style="display: inline-block">
+                <input id="centers-selfpaid" type="checkbox" class="custom-control-input" >
+                <label class="custom-control-label" for="centers-selfpaid">samoplátci</label>
+            </div>
+            <div class="custom-control custom-switch mr-3" style="display: inline-block">
+                <input id="centers-walkin" type="checkbox" class="custom-control-input" >
+                <label class="custom-control-label" for="centers-walkin">bez registrace</label>
+            </div>
+            <div class="custom-control custom-switch mr-3" style="display: inline-block">
+                <input id="centers-thirddoses" type="checkbox" class="custom-control-input" >
+                <label class="custom-control-label" for="centers-thirddoses">třetí dávky</label>
+            </div>
+            <div class="custom-control custom-switch" style="display: inline-block">
+                <input id="centers-barrierfree" type="checkbox" class="custom-control-input">
+                <label class="custom-control-label" for="centers-barrierfree">bezbariérová</label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div id="centers-map" style="height:600px;"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var m = new SMap(JAK.gel("centers-map"), SMap.Coords(15.4467614, 49.84937455), 7,  {minZoom: 7});
+    m.addControl(new SMap.Control.Sync());
+    m.addDefaultLayer(SMap.DEF_BASE).enable();
+    m.addDefaultControls();
+
+    var markers = [];
+    var coords = [];
+
+    {% for misto in mista %}
+        {% if (misto.status or misto.typ == 'WALKIN') and misto.longitude != None and misto.latitude != None %}
+        var c = SMap.Coords.fromWGS84({{ misto.longitude }}, {{ misto.latitude }});
+
+        var icon = JAK.mel("div");
+        {% if misto.registrace_prumer_cekani == None %}
+        var image = JAK.mel("img", {src:SMap.CONFIG.img+"/marker/drop-yellow.png"}, {filter:"grayscale(1)"});
+        {% elif misto.registrace_prumer_cekani/7 > 2 %}
+        var image = JAK.mel("img", {src:SMap.CONFIG.img+"/marker/drop-red.png"});
+        {% elif misto.registrace_prumer_cekani/7 < 1 %}
+        var image = JAK.mel("img", {src:SMap.CONFIG.img+"/marker/drop-yellow.png"}, {filter:"hue-rotate(80deg)"});
+        {% else %}
+        var image = JAK.mel("img", {src:SMap.CONFIG.img+"/marker/drop-yellow.png"});
+        {% endif %}
+
+        // var icon = JAK.mel("div");
+        // var image = JAK.mel("img", {src:SMap.CONFIG.img+"/marker/drop-red.png"});
+        icon.appendChild(image);
+
+        var options = {
+            title: "{{ misto.nazev }}",
+            url: icon
+        }
+        var marker = new SMap.Marker(c, null, options);
+
+        var card = new SMap.Card();
+        card.setSize(450, null)
+        card.getHeader().innerHTML = "<strong>{{ misto.nazev }}</strong>";
+        card.getBody().innerHTML = "<strong>Adresa:</strong> {{misto.adresa}}<br>" +
+            "<strong>Bezbariérový přístup:</strong> {{ 'Ano' if misto.bezbarierovy_pristup else 'Ne' }}<br>" +
+            "<strong>Čekání na rezervaci za poslední týden:</strong> {{ (None if misto.registrace_prumer_cekani == None else (misto.registrace_prumer_cekani / 7)) | format_decimal }} {{ 'týdne' if misto.registrace_prumer_cekani != None }} <br>" +
+            // "<strong>Průměrná doba čekajících ve frontě:</strong> {{ (None if misto.registrace_fronta_prumer_cekani == None else (misto.registrace_fronta_prumer_cekani / 7)) | format_decimal }} {{ 'týdne' if misto.registrace_fronta_prumer_cekani != None }} <br>" +
+            // "<strong>Zatížení místa:</strong> {{ (None if misto.ockovani_odhad_cekani == None else (misto.ockovani_odhad_cekani / 7)) | format_decimal }} {{ '' if misto.ockovani_odhad_cekani != None }} <br>" +
+            '<a href="./misto/{{ misto.id }}" class="btn btn-primary mt-2">Detail místa</a>';
+        card.getFooter().style = "display: none";
+        card.getContainer().style.padding = "0";
+        marker.decorate(SMap.Marker.Feature.Card, card);
+
+        marker.filter_data = {
+            children: {{ misto.deti | lower }},
+            selfpaid: {{ (misto.typ == 'SMPL') | lower }},
+            walkin: {{ (misto.typ == 'WALKIN') | lower }},
+            thirddoses: {{ (misto.id in third_doses_centers or 3 in misto.davky) | lower }},
+            barrierfree: {{ misto.bezbarierovy_pristup | lower }}
+        }
+
+        coords.push(c);
+        markers.push(marker);
+        {% endif %}
+    {% endfor %}
+
+    var layer = new SMap.Layer.Marker();
+    m.addLayer(layer);
+    layer.enable();
+
+    var cz = m.computeCenterZoom(coords);
+    m.setCenterZoom(cz[0], cz[1]);
+
+    function filterMarkers() {
+        const childrenValue = $("#centers-children")[0].checked;
+        const walkinValue = $("#centers-walkin")[0].checked;
+        const selfpaidValue = $("#centers-selfpaid")[0].checked;
+        const thirddosesValue = $("#centers-thirddoses")[0].checked;
+        const barrierfreeValue = $("#centers-barrierfree")[0].checked;
+
+        layer.removeAll();
+
+        for (var i=0;i<markers.length;i++) {
+            marker = markers[i];
+
+            if (((childrenValue && marker.filter_data.children) || (!childrenValue && (!marker.filter_data.children || marker.filter_data.selfpaid || marker.filter_data.walkin)))
+                && ((walkinValue && marker.filter_data.walkin) || (!walkinValue && !marker.filter_data.walkin))
+                && ((selfpaidValue && marker.filter_data.selfpaid) || (!selfpaidValue && !marker.filter_data.selfpaid))
+                && (!thirddosesValue || marker.filter_data.thirddoses)
+                && (!barrierfreeValue || marker.filter_data.barrierfree)) {
+                layer.addMarker(marker);
+            }
+        }
+    }
+
+    $(document).ready(function () {
+        $("#centers-searchbox").keyup(function () {
+            filterMarkers();
+        });
+        $("#centers-children").change(function () {
+            filterMarkers();
+        });
+        $("#centers-walkin").change(function () {
+            filterMarkers();
+        });
+        $("#centers-selfpaid").change(function () {
+            filterMarkers();
+        });
+        $("#centers-thirddoses").change(function () {
+            filterMarkers();
+        });
+        $("#centers-barrierfree").change(function () {
+            filterMarkers();
+        });
+        filterMarkers();
+    });
+</script>
+{% endblock %}
+

@@ -1,0 +1,144 @@
+{% macro graf_prijatych_davek(data) -%}
+<div id="graf-prijato"></div>
+<div class="font-italic">
+    <h6>Poznámky</h6>
+    <p class="text-justify mb-0">
+        Data neobsahují vakcíny distribuované přímo praktickým lékařům.
+    </p>
+</div>
+
+<script>
+    function grafPrijatychDavek() {
+        const traces = [
+            {% for row in data %}
+                {
+                    x: [{% for date in row.datum %}"{{ date }}",{%  endfor %}],
+                    y: [{% for value in row.prijem %}{{ value }}, {% endfor %}],
+                    name: "{{ row.vyrobce }}",
+                    type: "bar",
+                    marker: {
+                        color: palette[{{ (loop.index - 1) % 10 }}]
+                    }
+                },
+            {% endfor %}
+        ];
+
+        const layout = {
+            title: "Dodané dávky",
+            barmode: "stack",
+            autosize: true,
+            xaxis: {
+                title: "Datum [den]",
+                type: "date",
+
+                // Tune ticks
+                tickformat: "%-d.%-m.%Y",
+                tickangle: -90,
+                nticks: 15,
+
+                // Set range to one month by default
+                range: [new Date(new Date().setMonth(new Date().getMonth() - 1)), new Date()],
+                rangeslider: {},
+                rangeselector: {
+                    buttons: [
+                        {
+                            count: 7,
+                            label: "1 týden",
+                            step: "day",
+                            stepmode: "backward"
+                        },
+                        {
+                            count: 14,
+                            label: "2 týdny",
+                            step: "day",
+                            stepmode: "backward"
+                        },
+                        {
+                            count: 1,
+                            label: "1 měsíc",
+                            step: "month",
+                            stepmode: "backward",
+                        },
+                        {
+                            label: "všechna data",
+                            step: "all"
+                        }
+                    ],
+                    xanchor: "center",
+                    x: 0.5,
+                }
+            },
+            yaxis: {
+                title: "Počet dodaných dávek",
+                automargin: true,
+                tickformat: ".f",
+            },
+            hovermode: "x unified",
+            showlegend: true,
+            legend: {
+                orientation: "h",
+                xanchor: "center",
+                x: 0.5,
+                yanchor: "bottom",
+                y: -0.8,
+            },
+            height: 700,
+        };
+
+        const config = {
+            responsive: true,
+            displayModeBar: false,
+        };
+
+        Plotly.newPlot("graf-prijato", traces, layout, config);
+
+        // force relayout to rescale y
+        range = {'xaxis.range[0]': layout.xaxis.range[0].toISOString(), 'xaxis.range[1]': layout.xaxis.range[1].toISOString()}
+        Plotly.relayout('graf-prijato', range);
+    }
+
+    function grafPrijatychDavekRescale(e) {
+        if (e.target.layout.stopRescale === true) {
+            e.target.layout.stopRescale = false;
+            return;
+        }
+
+        console.log(e);
+
+        var rangeX = e.target.layout.xaxis.range
+        var data = e.target.data
+        var maxY = 0;
+
+        for (var i = 0; i < data.length; i++) {
+            var dataX = data[i].x
+            for (var j = 0; j < dataX.length; j++) {
+                if (dataX[j] >= rangeX[0] && dataX[j] <= rangeX[1]) {
+                    var dataY = data[i].y
+                    if (dataY[j] > maxY) {
+                        maxY = dataY[j];
+                    }
+                }
+            }
+        }
+
+        Plotly.relayout('graf-prijato', {'yaxis.range[0]': 0, 'yaxis.range[1]': maxY * 1.05, 'stopRescale': true});
+    }
+
+    // Initially show the chart
+    grafPrijatychDavek();
+
+    // Reset chart when tab is shown
+    $('a[data-toggle="tab"]').on("shown.bs.tab", function(e) {
+        let target = $(e.target).attr("href")
+
+        if (target==="#graf-dodavky") {
+            grafPrijatychDavek();
+        }
+    });
+
+    $('#graf-prijato').on("plotly_relayout", function (e) {
+        grafPrijatychDavekRescale(e)
+    });
+
+</script>
+{%- endmacro %}

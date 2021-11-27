@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% from 'macros/common.html' import metrika %}
+{% from 'macros/tables/stav_registraci.html' import stav_registraci %}
+{% from 'macros/tables/volna_mista.html' import volna_mista %}
+{% from 'macros/tables/stav_vakcin.html' import stav_vakcin %}
+{% from 'macros/graphs/registrace.html' import graf_registrace %}
+{% from 'macros/graphs/fronta.html' import graf_fronta %}
+{% from 'macros/graphs/ockovani.html' import graf_ockovani %}
+
+{% block title %}
+{{ misto.nazev }} |
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col">
+        <h3>Očkovací místo: {{ misto.nazev }} </h3>
+    </div>
+</div>
+
+{% if not misto.status and misto.ockovaci_misto_detail.typ != 'WALKIN' %}
+<div class="row">
+    <div class="col">
+        <div class="alert alert-warning" role="alert">
+            <p class="mb-0">
+                Toto očkovací místo je v současnosti skryto v rezervačním systému a nepřijímá nové registrace.
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row px-2">
+    <div class="col-md-6 px-2 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Podrobnosti o očkovacím místě</h5>
+                <dl>
+                    <dt>Adresa</dt>
+                    <dd>{{misto.adresa}}</dd>
+
+                    {% if misto.ockovaci_misto_detail.upresneni_polohy %}
+                        <dt>Upřesnění polohy</dt>
+                        <dd>{{ misto.ockovaci_misto_detail.upresneni_polohy }}</dd>
+                    {% endif %}
+
+                    <dt>Bezbariérový přístup</dt>
+                    <dd>{{ 'Ano' if misto.bezbarierovy_pristup else 'Ne' }}</dd>
+
+                    <dt>Vakcíny</dt>
+                    <dd>
+                        {% for v in misto.ockovaci_misto_detail.vakciny %}
+                        {{ v.split('/')[-1] }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </dd>
+
+                    {% if misto.ockovaci_misto_detail.typ == 'WALKIN' %}
+                    {% if misto.ockovaci_misto_detail.telefon %}
+                    <dt>Telefon</dt>
+                    <dd>
+                        <a href="tel:{{ misto.ockovaci_misto_detail.telefon }}">
+                            {{ misto.ockovaci_misto_detail.telefon }}
+                        </a>
+                    </dd>
+                    {% endif %}
+
+                    {% if misto.ockovaci_misto_detail.email %}
+                    <dt>E-mail</dt>
+                    <dd>
+                        <a href="mailto:{{ misto.ockovaci_misto_detail.email }}">
+                            {{ misto.ockovaci_misto_detail.email }}
+                        </a>
+                    </dd>
+                    {% endif %}
+
+                    {% if misto.ockovaci_misto_detail.verejna_poznamka %}
+                    <dt>Poznámka</dt>
+                    <dd class="text-justify">
+                        {{ misto.ockovaci_misto_detail.verejna_poznamka | urlize(target='_blank') | nl2br |safe }}
+                    </dd>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if misto.okres %}
+                        <dt>Okolní očkovací místa</dt>
+                        <dd>
+                            <span class="mr-1">
+                                Okres:
+                                <a href="{{ url_for('view.info_okres', okres_name=misto.okres.nazev) }}">
+                                    {{ misto.okres.nazev }}
+                                </a>
+                            </span>
+                            <span>
+                                Kraj:
+                                <a href="{{ url_for('view.info_kraj', kraj_name=misto.okres.kraj.nazev) }}">
+                                    {{ misto.okres.kraj.nazev }}
+                                </a>
+                            </span>
+                        </dd>
+                    {% endif %}
+                </dl>
+                <div class="mb-n1">
+                    <a href="https://ockoreport.uzis.cz/Detail?guid={{misto.id}}" class="btn btn-primary mb-1"
+                       target="_blank">
+                        Oficiální stránka místa
+                    </a>
+                    {% if misto.status %}
+                    <a href="https://registrace.mzcr.cz/" class="btn btn-primary mb-1" target="_blank">
+                        Registrace
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 px-2 mb-3">
+        <div class="card h-100">
+            <div class="card-body mb-n3">
+                {% if misto.longitude and misto.latitude %}
+                <h5 class="card-title">Mapa</h5>
+                <div id="center-map" class="mb-3" style="height:330px;"></div>
+                {% endif %}
+
+                {% if misto.ockovaci_misto_detail.typ == 'WALKIN' and opening_hours %}
+                <h5 class="card-title">Provozní doba</h5>
+                <table class="table table-bordered table-sm mb-3">
+                    {% for day in opening_hours %}
+                    <tr>
+                        <td>{{ day | format_weekday }}</td>
+                        <td>
+                            {% for hour in opening_hours[day] %}
+                            {{ hour[0] | format_time }}-{{ hour[1] | format_time }}
+                            {%- if not loop.last %}, {% endif -%}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if misto.ockovaci_misto_detail.typ != 'WALKIN' %}
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header" id="cards">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#statistiky">Statistiky</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#registrace">Stav registrací</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#vakciny">Stav vakcín</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#volne-terminy">Volné termíny</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#graf-fronta">Vývoj fronty</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#graf-ockovani">Vývoj očkování</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#graf-registrace">Vývoj registrací</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane active" id="statistiky">
+                        <div class="row px-2 mb-n2">
+                            {{ metrika('Očkované dávky', metriky.ockovani_pocet_davek, delta_day=metriky.ockovani_pocet_davek_zmena_den, delta_week=metriky.ockovani_pocet_davek_zmena_tyden, color='std', info="Počet dávek očkovaných zdravotnickým zařízením podle dat o vykázaných očkováních.<br>Zdravotnické zařízení může mít více očkovacích míst, proto údaj uvádíme pouze u těch zařízení, která mají jen jedno aktivní očkovací místo. Pokud toto očkovací místo v minulosti nahradilo jiné, zahrnuje počet i očkované na původním místě.") }}
+                            {{ metrika('Přijaté dávky', metriky.vakciny_prijate_pocet, delta_day=metriky.vakciny_prijate_pocet_zmena_den, delta_week=metriky.vakciny_prijate_pocet_zmena_tyden, color='std', info='Počet dávek přijatých na očkovací centrum.<br>Dávky vydané mimo očkovací místa (např. praktickým lékařům) jsou odečtené.') }}
+                            {{ metrika('Použité dávky', metriky.vakciny_ockovane_pocet, delta_day=metriky.vakciny_ockovane_pocet_zmena_den, delta_week=metriky.vakciny_ockovane_pocet_zmena_tyden, color='std', info="Počet dávek očkovaných očkovacím centrem podle dat o spotřebě vakcín.<br>Většinou je tento údaj méně přesný než počet vycházející z dat o vykázaných očkováních.") }}
+                            {{ metrika('Přibližně skladem', metriky.vakciny_skladem_pocet, delta_day=metriky.vakciny_skladem_pocet_zmena_den, delta_week=metriky.vakciny_skladem_pocet_zmena_tyden, warning='Odhadovaný počet dávek skladem.<br>Údaj je počítán z dat o distribuci a spotřebě vakcín. Jednotlivé datové sady mají různá zpoždění a nepřesnosti, proto údaj berte jako orientační.') }}
+                            {{ metrika('Čekající ve frontě', metriky.registrace_fronta, delta_day=metriky.registrace_fronta_zmena_den, delta_week=metriky.registrace_fronta_zmena_tyden, color='rev', info='Počet registrovaných bez rezervovaného termínu.') }}
+                            {{ metrika('Čekající před závorou', metriky.registrace_pred_zavorou, delta_day=metriky.registrace_pred_zavorou_zmena_den, delta_week=metriky.registrace_pred_zavorou_zmena_tyden, color='rev', info='Počet registrovaných čekajících na možnost rezervace konkrétního termínu.') }}
+                            {{ metrika('Rezervací denně', metriky.registrace_rezervace_prumer, delta_day=metriky.registrace_rezervace_prumer_zmena_den, delta_week=metriky.registrace_rezervace_prumer_zmena_tyden, info='Průměrný počet rezervací uvolněných za posledních 7 dnů.') }}
+                            {{ metrika('Čekající na 1. dávku', metriky.rezervace_cekajici_1, delta_day=metriky.rezervace_cekajici_1_zmena_den, delta_week=metriky.rezervace_cekajici_1_zmena_tyden, warning='Počet registrovaných s rezervovaným termínem na 1.&nbsp;dávku očkování.<br>V současnosti jsou k dispozici data jen pro následující měsíc!') }}
+                            {{ metrika('Čekající na 2. dávku', metriky.rezervace_cekajici_2, delta_day=metriky.rezervace_cekajici_2_zmena_den, delta_week=metriky.rezervace_cekajici_2_zmena_tyden, warning='Počet registrovaných s rezervovaným termínem na 2.&nbsp;dávku očkování.<br>Rezervace na 2.&nbsp;dávku se vytváří společně s rezervací na 1.&nbsp;dávku, zahrnuti jsou tedy i ti, kteří čekají na obě dávky.<br>V současnosti jsou k dispozici data jen pro následující měsíc!') }}
+                            {{ metrika('Čekající na 3. dávku', metriky.rezervace_cekajici_3, delta_day=metriky.rezervace_cekajici_3_zmena_den, delta_week=metriky.rezervace_cekajici_3_zmena_tyden, warning='Počet registrovaných s rezervovaným termínem na 3.&nbsp;dávku očkování.<br>V současnosti jsou k dispozici data jen pro následující měsíc!') }}
+                            {{ metrika('Dnešní kapacita 1. dávky', metriky.rezervace_kapacita_1, delta_day=metriky.rezervace_kapacita_1_zmena_den, delta_week=metriky.rezervace_kapacita_1_zmena_tyden, color='std', info='Dnešní kapacita pro očkování 1.&nbsp;dávkou.<br>Získáno z maximální kapacity uvedené v rezervačním systému.') }}
+                            {#
+                            {{ metrika('Dnešní kapacita 2. dávky', metriky.rezervace_kapacita_2, delta_day=metriky.rezervace_kapacita_2_zmena_den, delta_week=metriky.rezervace_kapacita_2_zmena_tyden, color='std', info='Dnešní kapacita pro očkování 2.&nbsp;dávkou.<br>Získáno z maximální kapacity uvedené v rezervačním systému.') }}
+                            #}
+                            {{ metrika('Dnešní kapacita 3. dávky', metriky.rezervace_kapacita_3, delta_day=metriky.rezervace_kapacita_3_zmena_den, delta_week=metriky.rezervace_kapacita_3_zmena_tyden, color='std', info='Dnešní kapacita pro očkování 3.&nbsp;dávkou.<br>Získáno z maximální kapacity uvedené v rezervačním systému.') }}
+                            {{ metrika('Čekání na rezervaci', metriky.registrace_prumer_cekani, delta_day=metriky.registrace_prumer_cekani_zmena_den, delta_week=metriky.registrace_prumer_cekani_zmena_tyden, decimal=True, unit='týdne', divide=7, color='rev', info='Průměrná doba mezi registrací a rezervací konkrétního termínu za posledních 7 dní (přibližně odpovídá čekání na možnost výběru termínu).<br>Registrace na 1. a 3. dávku mohou mít různou prioritu.') }}
+                            {#
+                            {{ metrika('Doba ve frontě', metriky.registrace_fronta_prumer_cekani, delta_day=metriky.registrace_fronta_prumer_cekani_zmena_den, delta_week=metriky.registrace_fronta_prumer_cekani_zmena_tyden, decimal=True, unit='týdne', divide=7, color='rev', info='Průměrná doba strávená čekajícími ve frontě k dnešnímu dni.') }}
+                            {{ metrika('Zatížení místa', metriky.ockovani_odhad_cekani, delta_day=metriky.ockovani_odhad_cekani_zmena_den, delta_week=metriky.ockovani_odhad_cekani_zmena_tyden, decimal=True, unit='', divide=7, color='rev', warning='Odhadovaný počet týdnů potřebný k naočkování všech lidí na daném místě, tj. těch s rezervací a lidí ve frontě 1. dávkou. Pro odhad rychlosti očkování se používají zaplněné rezervace za posledních 7 dnů. Data mohou být ovlivněna nedostatkem zájemců nebo změnami kapacit místa, u nových míst chybí úplně, proto číslo berte jako orientační!') }}
+                            {{ metrika('7denní úspěšnost', metriky.registrace_tydenni_uspesnost, delta_day=metriky.registrace_tydenni_uspesnost_zmena_den, delta_week=metriky.registrace_tydenni_uspesnost_zmena_tyden, decimal=True, unit='%', multiply=100, color='std', info='Poměr počtu registrovaných za posledních 7 dní s vybraným termínem ku počtu všech registrovaných za posledních 7 dní.') }}
+                            {{ metrika('14denní úspěšnost', metriky.registrace_14denni_uspesnost, delta_day=metriky.registrace_14denni_uspesnost_zmena_den, delta_week=metriky.registrace_14denni_uspesnost_zmena_tyden, decimal=True, unit='%', multiply=100, color='std', info='Poměr počtu registrovaných za posledních 14 dní s vybraným termínem ku počtu všech registrovaných za posledních 14 dní.') }}
+                            {{ metrika('30denní úspěšnost', metriky.registrace_30denni_uspesnost, delta_day=metriky.registrace_30denni_uspesnost_zmena_den, delta_week=metriky.registrace_30denni_uspesnost_zmena_tyden, decimal=True, unit='%', multiply=100, color='std', info='Poměr počtu registrovaných za posledních 30 dní s vybraným termínem ku počtu všech registrovaných za posledních 30 dní.') }}
+                            #}
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="registrace">
+                        {{ stav_registraci(registrations) }}
+                    </div>
+                    <div class="tab-pane" id="vakciny">
+                        {{ stav_vakcin(vaccines) }}
+                    </div>
+                    <div class="tab-pane" id="volne-terminy">
+                        {{ volna_mista(free_slots) }}
+                    </div>
+                    <div class="tab-pane" id="graf-fronta">
+                        {{ graf_fronta(queue_graph_data) }}
+                    </div>
+                    <div class="tab-pane" id="graf-ockovani">
+                        {{ graf_ockovani(vaccination_graph_data) }}
+                    </div>
+                    <div class="tab-pane" id="graf-registrace">
+                        {{ graf_registrace(registrations_graph_data) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var center = SMap.Coords.fromWGS84({{misto.longitude}}, {{misto.latitude}});
+    var m = new SMap(JAK.gel("center-map"), center, 14);
+    m.addControl(new SMap.Control.Sync());
+    m.addDefaultLayer(SMap.DEF_BASE).enable();
+    m.addDefaultControls();
+
+    var layer = new SMap.Layer.Marker();
+    m.addLayer(layer);
+    layer.enable();
+
+    var options = {};
+    var marker = new SMap.Marker(center, "marker", options);
+    layer.addMarker(marker);
+</script>
+{% endblock %}

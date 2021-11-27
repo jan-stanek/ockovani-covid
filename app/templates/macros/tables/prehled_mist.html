@@ -1,0 +1,190 @@
+{% from 'macros/common.html' import stitek %}
+
+{% macro prehled_mist(centers, third_doses_centers) -%}
+<div class="row">
+    <div class="col mb-2">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fa fa-search fa-fw"></i></span>
+            </div>
+            <input id="centers-searchbox" type="text" class="form-control" placeholder="Hledat...">
+        </div>
+    </div>
+    <div class="col-12 col-lg-auto text-center mb-3">
+        <div class="custom-control custom-switch mr-3" style="display: inline-block">
+            <input id="centers-children" type="checkbox" class="custom-control-input" >
+            <label class="custom-control-label" for="centers-children">děti</label>
+        </div>
+        <div class="custom-control custom-switch mr-3" style="display: inline-block">
+            <input id="centers-selfpaid" type="checkbox" class="custom-control-input" >
+            <label class="custom-control-label" for="centers-selfpaid">samoplátci</label>
+        </div>
+        <div class="custom-control custom-switch mr-3" style="display: inline-block">
+            <input id="centers-walkin" type="checkbox" class="custom-control-input" >
+            <label class="custom-control-label" for="centers-walkin">bez registrace</label>
+        </div>
+        <div class="custom-control custom-switch mr-3" style="display: inline-block">
+            <input id="centers-thirddoses" type="checkbox" class="custom-control-input" >
+            <label class="custom-control-label" for="centers-thirddoses">třetí dávky</label>
+        </div>
+        <div class="custom-control custom-switch mr-3" style="display: inline-block">
+            <input id="centers-active" type="checkbox" class="custom-control-input" checked>
+            <label class="custom-control-label" for="centers-active">aktivní</label>
+        </div>
+        <div class="custom-control custom-switch" style="display: inline-block">
+            <input id="centers-barrierfree" type="checkbox" class="custom-control-input">
+            <label class="custom-control-label" for="centers-barrierfree">bezbariérová</label>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        {% if centers %}
+        <div class="table-responsive">
+            <table id="centers-table" class="table table-bordered table-striped table-sm">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col" class="text-center col-sortable">Název</th>
+                    <th scope="col" class="text-center col-sortable">Okres</th>
+                    <th scope="col" class="text-center col-sortable">Kraj</th>
+                    <th scope="col" class="text-center col-sortable">
+                        Ve frontě
+                        <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                           title="Počet registrovaných bez rezervovaného termínu.">
+                        </i>
+                    </th>
+                    <th scope="col" class="text-center col-sortable">
+                        Před závorou
+                        <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="auto"
+                           title="Počet registrovaných čekajících na možnost rezervace konkrétního termínu.">
+                        </i>
+                    </th>
+                    <th scope="col" class="text-center col-sortable">
+                        Čekání na rezervaci
+                        <i class="fas fa-exclamation-triangle" data-toggle="tooltip" data-placement="auto"
+                           data-html="true"
+                           title="Průměrná doba mezi registrací a rezervací konkrétního termínu za posledních 7 dní (přibližně odpovídá čekání na možnost výběru termínu).<br>Registrace na 1. a 3. dávku mohou mít různou prioritu.<br>Červená (>2), žlutá (>1), zelená (>0).">
+                        </i>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in centers %}
+                <tr class="{{ 'table-warning' if not item.status and item.typ != 'WALKIN' }}"
+                    data-children="{{ item.deti }}"
+                    data-walkin="{{ item.typ == 'WALKIN' }}"
+                    data-selfpaid="{{ item.typ == 'SMPL' }}"
+                    data-thirddoses="{{ item.id in third_doses_centers or 3 in item.davky }}"
+                    data-active="{{ item.status or item.typ == 'WALKIN' }}"
+                    data-barrierfree="{{ item.bezbarierovy_pristup }}">
+                    <td data-value="{{ item.nazev }}">
+                        <a href="{{ url_for('view.info_misto', misto_id=item.id) }}">{{ item.nazev }}</a>
+                    </td>
+                    <td data-value="{{ item.okres }}">
+                        {% if item.okres %}
+                            {% if request.path.startswith('/okres') %}
+                            {{ item.okres }}
+                            {% else %}
+                            <a href="{{ url_for('view.info_okres', okres_name=item.okres) }}">{{ item.okres }}</a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td data-value="{{ item.kraj }}">
+                        {% if item.kraj %}
+                            {% if request.path.startswith('/kraj') %}
+                            {{ item.kraj }}
+                            {% else %}
+                            <a href="{{ url_for('view.info_kraj', kraj_name=item.kraj) }}">{{ item.kraj }}</a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="text-right" data-value="{{ item.registrace_fronta }}">
+                        {{ item.registrace_fronta | format_number }}
+                    </td>
+                    <td class="text-right" data-value="{{ item.registrace_pred_zavorou }}">
+                        {{ item.registrace_pred_zavorou | format_number }}
+                    </td>
+                    <td class="text-center" data-value="{{ item.registrace_prumer_cekani }}">
+                        {{ stitek(item.registrace_prumer_cekani, decimal=True, unit='týdne', unit_short='t', divide=7,
+                        rev_color=True, limits=(1, 2)) }}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="font-italic text-justify mb-0">
+            Oranžově jsou vyznačena očkovací místa, která jsou v&nbsp;současnosti skryta v rezervačním systému, ale
+            zároveň jsou na nich čekající ve frontě nebo s&nbsp;rezervací.
+        </p>
+        {% else %}
+        <div class="alert alert-warning w-100" role="alert">
+            Zatím nemáme žádná data.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const stripAccents = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    function filterChanged() {
+        const searchValue = stripAccents($("#centers-searchbox").val().toLowerCase());
+        const childrenValue = $("#centers-children")[0].checked;
+        const walkinValue = $("#centers-walkin")[0].checked;
+        const selfpaidValue = $("#centers-selfpaid")[0].checked;
+        const thirddosesValue = $("#centers-thirddoses")[0].checked;
+        const activeValue = $("#centers-active")[0].checked;
+        const barrierfreeValue = $("#centers-barrierfree")[0].checked;
+
+        $("#centers-table tbody tr").filter(function () {
+            const normalized = stripAccents($(this).text().toLowerCase());
+            const children = $(this)[0].dataset.children;
+            const walkin = $(this)[0].dataset.walkin;
+            const selfpaid = $(this)[0].dataset.selfpaid;
+            const thirddoses = $(this)[0].dataset.thirddoses;
+            const active = $(this)[0].dataset.active;
+            const barrierfree = $(this)[0].dataset.barrierfree;
+
+            $(this).toggle(
+                normalized.indexOf(searchValue) > -1
+                && ((childrenValue && children === 'True') || (!childrenValue && (children === 'False' || selfpaid === 'True' || walkin === 'True')))
+                && ((walkinValue && walkin === 'True') || (!walkinValue && walkin === 'False'))
+                && ((selfpaidValue && selfpaid === 'True') || (!selfpaidValue && selfpaid === 'False'))
+                && (!thirddosesValue || thirddoses === 'True')
+                && (!activeValue || active === 'True')
+                && (!barrierfreeValue || barrierfree === 'True')
+            )
+        });
+
+        $("#centers-table tbody tr:visible").each(function (index) {
+            $(this).css("background-color", !!(index & 1) ? "rgba(0,0,0,0)" : "rgba(0,0,0,.05)");
+        });
+    }
+
+    $(document).ready(function () {
+        $("#centers-searchbox").keyup(function () {
+            filterChanged();
+        });
+        $("#centers-children").change(function () {
+            filterChanged();
+        });
+        $("#centers-walkin").change(function () {
+            filterChanged();
+        });
+        $("#centers-selfpaid").change(function () {
+            filterChanged();
+        });
+        $("#centers-thirddoses").change(function () {
+            filterChanged();
+        });
+        $("#centers-active").change(function () {
+            filterChanged();
+        });
+        $("#centers-barrierfree").change(function () {
+            filterChanged();
+        });
+        filterChanged();
+    });
+</script>
+{%- endmacro %}

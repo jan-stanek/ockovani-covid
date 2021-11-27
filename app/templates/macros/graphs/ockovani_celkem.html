@@ -1,0 +1,75 @@
+{% macro graf_ockovani_celkem(data) -%}
+<div id="graf-ockovani-celkem"></div>
+<script>
+    function grafOckovaniCelkem() {
+        const ockovani_castecne = {
+            x: [{% for idx, row in data.iterrows() %}"{{ idx }}",{% endfor %}],
+            y: [{% for idx, row in data.iterrows() %}{{ row['ockovani_castecne'] }},{% endfor %}],
+            mode: "lines",
+            type: "scatter",
+            name: "Očkovaní (alespoň jedna dávka)",
+            hovertemplate: "%{y}"
+        }
+
+        const ockovani_plne = {
+            x: [{% for idx, row in data.iterrows() %}"{{ idx }}",{% endfor %}],
+            y: [{% for idx, row in data.iterrows() %}{{ row['ockovani_plne'] }},{% endfor %}],
+            mode: "lines",
+            type: "scatter",
+            name: "Plně očkovaní (všechny potřebné dávky)",
+            hovertemplate: "%{y}"
+        }
+
+        const ockovani_3 = {
+            x: [{% for idx, row in data.iterrows() %}"{{ idx }}",{% endfor %}],
+            y: [{% for idx, row in data.iterrows() %}{{ row['ockovani_3'] }},{% endfor %}],
+            mode: "lines",
+            type: "scatter",
+            name: "Očkovaní posilující dávkou",
+            hovertemplate: "%{y}"
+        }
+
+        const layout = {
+            title: "Celkový počet očkovaných",
+            autosize: true,
+            xaxis: {
+                title: "Datum [den]",
+                type: "date",
+                tickformat: "%-d.%-m.%Y",
+            },
+            yaxis: {
+                title: "Počet osob",
+                automargin: true,
+                tickformat: '.f',
+            },
+            hovermode: "x unified",
+            showlegend: true,
+            legend: {
+                orientation: "h",
+                xanchor: "center",
+                x: 0.5,
+                y: -0.15,
+            },
+            height: 700,
+        }
+
+        const data = [ockovani_castecne, ockovani_plne, ockovani_3];
+
+        const config = {
+            responsive: true,
+            displayModeBar: false,
+        }
+
+        Plotly.newPlot("graf-ockovani-celkem", data, layout, config);
+    }
+
+    grafOckovaniCelkem();
+
+    $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+        let target = $(e.target).attr("href")
+        if(target==="#graf-ockovani") {
+            grafOckovaniCelkem();
+        }
+    });
+</script>
+{%- endmacro %}

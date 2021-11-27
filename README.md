@@ -1,39 +1,119 @@
-# Volná místa na COVID-19 očkování
+|            | Workflow status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| deployment | [![deploy-acceptance](https://github.com/msusicky/ockovani-covid/actions/workflows/deploy-acceptance.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/deploy-acceptance.yml) [![deploy-production](https://github.com/msusicky/ockovani-covid/actions/workflows/deploy-production.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/deploy-production.yml)                                                                                                                                                                                                                                                                                                                                                                            |
+| acceptance | [![test](https://github.com/msusicky/ockovani-covid/actions/workflows/test.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/test.yml)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| production | [![update-data-daily](https://github.com/msusicky/ockovani-covid/actions/workflows/update-data-daily.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/update-data-daily.yml) [![update-data-hourly](https://github.com/msusicky/ockovani-covid/actions/workflows/update-data-hourly.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/update-data-hourly.yml) [![update-web](https://github.com/msusicky/ockovani-covid/actions/workflows/update-web.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/update-web.yml) [![post-tweet](https://github.com/msusicky/ockovani-covid/actions/workflows/post-tweet.yml/badge.svg)](https://github.com/msusicky/ockovani-covid/actions/workflows/post-tweet.yml) |
+
+# COVID-19 data o očkování (https://ockovani.opendatalab.cz)
 Za systémem stojí Jan Staněk (http://jstanek.cz/), Marek Sušický (marek(at)susicky.net) a přátele, kteří poskytli cenné připomínky.
 
+## Čtěte!
+Tento web poskytuje data, která zobrazují statistiky jednotlivých očkovacích míst. Systém je komplikovaný a pro správná rozhodnutí je nezbytné si přečíst, jak funguje. Nezávazně doporučujeme sledovat, kolik je na daném místě registrovaných lidí, kteří mají a nemají termín, kolik je volných slotů na očkování a kolik  vakcín přibližně dostává dané místo. Nedává smysl měnit často registraci, změnou registrace se dostáváte na poslední místo ve stejné věkové kategorii na novém místě.
+
+## Starý popis webu - před dostupností opendat od UZIS
 Během marné snahy zajistit očkovací místa pro příbuzné jsme si všimli toho, že neexistuje žádný přehled volných míst. Ještě v lednu jsme začali tvořit aplikaci, ale narazili na neexistenci dat. Pak došly vakcíny a nedávalo smysl systém spouštět. Nyní je situace taková, že mnoho lidí čeká na vakcinaci, ale pokud nejsou na tom správném místě, budou čekat dál. Na jiných místech už ale lidé 80+ "došli". S naší mapou se lidé mohou přeregistrovat, dostat vakcinu rychleji a zefektivnit celý proces očkování. Prosím kohokoliv, kdo může přispět ke zveřejnění oficiálních dat o volných kapacitách a distribuci vakcín, aby tak učinil.
 
+Web: https://ockovani.opendatalab.cz
+
 ## Napsali o nás
-https://denikn.cz/569269/kde-maji-volna-mista-programatori-po-nocich-vymysleli-aplikaci-ktera-muze-zkratit-cekani-na-vakcinu
+* [Deník N: Kde mají volná místa? Programátoři po nocích vymysleli aplikaci, která může zkrátit čekání na vakcínu](https://denikn.cz/569269/kde-maji-volna-mista-programatori-po-nocich-vymysleli-aplikaci-ktera-muze-zkratit-cekani-na-vakcinu)
+* [Živě: Když to neudělal stát, poradili si programátoři sami. Vytvořili aplikaci s přehledem volných míst pro očkování](https://www.zive.cz/clanky/kdyz-to-neudelal-stat-poradili-si-programatori-sami-vytvorili-aplikaci-s-prehledem-volnych-mist-pro-ockovani/sc-3-a-208719/default.aspx)
+* [Hospodářské noviny: Programátor rozjel web, který ukáže, kde je volno na očkování. Ve skladech leží 250 tisíc dávek vakcín, říká](https://domaci.ihned.cz/c1-66889710-programator-rozjel-web-ktery-ukaze-kde-je-volno-na-ockovani-ve-skladech-lezi-250-tisic-davek-vakcin-rika)
+* [Forbes: Kde se nechat naočkovat. Platforma z ČVUT ukazuje dostupné očkovací kapacity](https://forbes.cz/kde-se-nechat-naockovat-platforma-z-cvut-ukazuje-dostupne-ockovaci-kapacity/)
+* [Echo24: Kde je volná vakcína? Web ukazuje stav na očkovacích místech](https://www.echo24.cz/a/Sqbj5/kde-je-volna-vakcina-web-ukazuje-stav-na-ockovacich-mistech)
+* [Aktuálně: Mladí muži marně hledali očkovací termín pro prarodiče. Vytvořili web s volnými místy](https://zpravy.aktualne.cz/domaci/mladici-marne-hledali-ockovaci-termin-pro-prarodice-vytvoril/r~c7975d9c802511eb9cafac1f6b220ee8/)
+* [inSmart: Kde je pro mě vakcína? ČVUT vyvinulo aplikaci s přehledem volných míst na očkování proti Covidu](https://insmart.cz/volna-mista-vakciny-covid/)
+* [Česká věda do světa: Odborníci z ČVUT vytvořili aplikaci pro očkování proti koronaviru](http://ceskavedadosveta.cz/odbornici-z-cvut-vytvorili-aplikaci-pro-ockovani-proti-koronaviru/)
+* [Deník: Vyberte si nejmenší frontu. Pomůže aplikace s vytížeností očkovacích míst](https://www.denik.cz/z_domova/ockovani-termin-vakcina-senior-covid-nemocnice-poradi.html)
+* [ČTK: Počet čekajících na vakcínu na covid je možné si ověřit na webu](https://www.ceskenoviny.cz/zpravy/2007015)
+* [pribram.cz: Počet čekajících na vakcínu na covid je možné si ověřit na webu](https://www.pribram.cz/clanek/pocet-cekajicich-na-vakcinu-na-covid-je-mozne-si-overit-na-webu/18978/)
+* [MoneyMAG: Počet čekajících na vakcínu je možné si ověřit na webu](https://moneymag.cz/aktuality/pocet-cekajicich-na-vakcinu-je-mozne-si-overit-na-webu.f69bad14)
+* [EuroZprávy: Počet čekajících na vakcínu je možné si ověřit na webu](https://eurozpravy.cz/domaci/zdravotnictvi/pocet-cekajicich-na-vakcinu-je-mozne-si-overit-na-webu.a09f5308/)  
+* [Český rozhlas: Kde mají dostatek vakcín? Vědci z ČVUT vytvořili web, který porovnává jednotlivá očkovací místa](https://radiozurnal.rozhlas.cz/kde-maji-dostatek-vakcin-vedci-z-cvut-vytvorili-web-ktery-porovnava-jednotliva-8446956)
+* [Vitalia: Jak si (ne)vybrat nejpomalejší místo na očkování proti covidu](https://www.vitalia.cz/clanky/jak-si-ne-vybrat-nejpomalejsi-misto-na-ockovani-proti-covidu/)
+* [Televize Seznam: Večerní zprávy (15. 3.)](https://www.televizeseznam.cz/video/vecerni-zpravy-porad/kteri-ministri-uz-jsou-naockovani-opatreni-do-velikonoc-a-opakovani-rocniku-64143662)
+* [TV9P: Marta Kloučková Quintet a webová aplikace z FIT](https://www.youtube.com/watch?v=_DcoB_fXfe4)
+* [TV Nova: Mladí programátoři vytvořili web, kde zjistíte kapacity očkovacích míst](https://tn.nova.cz/clanek/mladi-programatori-vytvorili-web-kde-se-daji-zjistit-kapacity-ockovacich-mist.html)
+* [LIDOVKY: Jak vybrat rychlé očkovací centrum mezi pomalými? Správný výběr může ‚zkrátit‘ frontu i o týdny](https://www.lidovky.cz/domov/aplikace-pomaha-vybrat-rychla-ockovaci-centra-ktere-zvolit-terminy-se-lisi-v-radech-tydnu.A210523_214914_ln_domov_lros)
+* [Seznam Zprávy: Návod: Co udělat před tím, než se zaregistrujete k očkování](https://www.seznamzpravy.cz/clanek/ockovani-covid-jak-vybrat-misto-bez-front-156088)
+* [iDNES.cz: Očkování je možné i v den registrace. Přehled míst, kde se nejméně čeká](https://www.idnes.cz/zpravy/domaci/ockovaci-mista-skupina-od-16-do-29-praha-cekani-koronavirus.A210603_151750_domaci_lre)
+* [Svět Androida: Kde je nejkratší řada na očkování? Takto to lehce zjistíte i z mobilu](https://www.svetandroida.cz/kapacita-ockovacich-center-z-mobilu/)
+* [ČT24: Lékaři nabízejí na internetu očkování vakcínami proti koronaviru, kterým se blíží expirace. Chrání je před likvidací](https://ct24.ceskatelevize.cz/domaci/3360582-lekari-nabizeji-na-internetu-ockovani-vakcinami-proti-koronaviru-kterym-se-blizi)
+* [LIDOVKY: Lékaři zachraňují vakcíny před vylitím. Speciální web nabízí volné dávky, kterým brzy končí trvanlivost](https://www.lidovky.cz/domov/lekari-zachranuji-vakciny-pred-vylitim-specialni-web-nabizi-volne-davky-kterym-brzy-konci-trvanlivos.A210901_114738_ln_domov_lros)
+* [VTM: Očkování nefunguje, vždyť na covid minulý týden zemřelo víc očkovaných. Jenže je to přesně naopak](https://vtm.zive.cz/clanky/ockovani-nefunguje-vzdyt-na-covid-minuly-tyden-zemrelo-vic-ockovanych-jenze-je-to-presne-naopak/sc-870-a-213083/default.aspx)
 
 ## Poznámky k fungování
-Pro získávání dat využívá metody scrapingu. Vzhledem k tomu, že jsou data zveřejňována na githubu, **prosím scraper nespouštějte na vlastním prostředí a nezpůsobujte tak zbytečnou další zátěž rezervačnímu systému!**
+Pro získávání dat využívala metody scrapingu. Nyní využíváme oficiálních dat od UZIS.
 
 Aplikace se skládá z modulu fetcher, pak samotného webu a skriptu, který web stáhne a publikuje na github pages. Tento krok je realizován proto, že nechceme vystavovat veřejně aplikační server a chceme přenést zátěž na prostředky Githubu. Navíc jde o statické stránky, u kterých není problém obsloužit mnoho tisíc lidí současně.
 
 
 # How to run it [ENG]
 
-## Installation
+## Quick start with docker-compose
+To start the server without fetching recent data use `docker-compose up`.
 
-### Virtual environment
+The development server (default flask one for the moment) will start at port `5000`,
+you can access the deployment at `http://localhost:5000/`.
 
-#### Create venv
-`python3 -m venv venv`
+If you want to fetch recent data please set the FETCH_DATA environment variable: 
 
-#### Activate venv
-`source venv/bin/activate`
+`FETCH_DATA=true docker-compose up`
 
-#### Install requirements
-`pip install -r requirements.txt`
+## Installation without docker-compose
+1. create virtual environment
+    
+    `python3 -m venv venv`
 
-### 
-```
-python app.py
-```
-or
-```
-export FLASK_APP=app.py
-export FLASK_ENV=development
-flask run
-```
+1. activate virtual environment 
+    
+    `source venv/bin/activate`
+
+1. install requirements
+
+    `pip install -r requirements.txt`
+
+1. setup `config.py` according to the `config.sample.py` template
+
+1. setup Flask environment
+    
+    `export FLASK_ENV=development`
+
+1. execute database migrations
+    
+    `flask db upgrade`
+
+1. fetch data
+    
+    `flask fetch-data all`
+
+1. compute metrics
+    
+    `flask compute-metrics all`
+
+1. start Flask webserver
+    
+    `flask run`
+
+## Update web
+_Old manual way, now it's done automatically using GitHub Actions._
+
+1. activate venv
+ 
+    `source venv/bin/activate`
+
+1. execute database migration if needed
+
+    `flask db upgrade`
+
+1. fetch data
+    
+    `flask fetch-data all`
+
+1. restart or start webserver if needed
+
+    `systemctl start ockovani-prd.service`
+
+1. publish website
+
+    `bash tools/manual_publish.sh`
