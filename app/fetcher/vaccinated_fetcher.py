@@ -29,7 +29,7 @@ class VaccinatedFetcher(Fetcher):
 
         df['zarizeni_kod'] = df['zarizeni_kod'].str.zfill(11).fillna('-')
 
-        df['poradi_davky'] = df['poradi_davky'].astype(int)
+        df['poradi_davky'] = df['poradi_davky'].fillna(0).astype(int)
 
         df['indikace_zdravotnik'] = df['indikace_zdravotnik'].fillna(False).astype('bool')
         df['indikace_socialni_sluzby'] = df['indikace_socialni_sluzby'].fillna(False).astype('bool')
